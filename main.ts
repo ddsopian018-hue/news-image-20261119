@@ -1,17 +1,26 @@
-// news-image-20261119 (Node 22, standard library only): the entry is the
-// front page drawn by draw.py and stored here as entry.png. This program
-// copies that fixed image to the output directory, so running it twice
-// writes identical bytes. The gate takes a whole PNG of at most 1 MiB and
-// 1024 by 1024 pixels; the judge sees exactly the bytes copied.
+// news-image-20261119 — ship the finished front page.
 //
-// Outside the grader's container, MAKEFUN_OUTPUT_DIR stands in for /output:
-//   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
+// The artwork itself is baked into entry.png by draw.py (Pillow). This
+// little launcher has one job: place an exact copy of that PNG in the
+// directory the grader reads from, so the bytes the judge sees are the
+// bytes we drew. Nothing is generated or altered at run time.
+//
+// Where the file goes:
+//   * Inside the grading container the destination is /output.
+//   * Anywhere else, MAKEFUN_OUTPUT_DIR overrides it, e.g.:
+//         mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
+//
+// Node 22, standard library only — no dependencies to install.
 
-import { copyFileSync, mkdirSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { copyFileSync, mkdirSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const here = dirname(fileURLToPath(import.meta.url));
-const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
-mkdirSync(outDir, { recursive: true });
-copyFileSync(join(here, 'entry.png'), join(outDir, 'entry.png'));
+// The folder this script lives in is also where entry.png lives.
+const scriptDir = dirname(fileURLToPath(import.meta.url));
+
+// Resolve the destination, then make sure it exists before copying.
+const destination = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
+mkdirSync(destination, { recursive: true });
+
+copyFileSync(join(scriptDir, "entry.png"), join(destination, "entry.png"));
